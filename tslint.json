@@ -7,6 +7,9 @@
     ],
     "jsRules": {},
     "rules": {
+        "no-console": {
+            "severity": "warning"
+        },
         "trailing-comma": [
             false
         ],
