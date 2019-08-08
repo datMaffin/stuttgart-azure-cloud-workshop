@@ -4,6 +4,8 @@ import config from '../config.json'
 async function main(): Promise<void> {
     const client = ServiceBusClient.createFromConnectionString(config.connectionString)
     await sendMessage(client, 'session-1', 'test')
+    sendMessage(client, 'session-1', 'test').catch(err => console.log(err))
+    sendMessage(client, 'session-1', 'test').catch(err => console.log(err))
     await receiveMessages(client, 'session-1')
 }
 
@@ -17,8 +19,8 @@ async function sendMessage(sbClient: ServiceBusClient, sessionId: string, body: 
         label: 'Test',
         sessionId
     })
-
-    await queueClient.close()
+    // Dont wait for the queueClient to close as we always create a new one
+    queueClient.close().catch(err => console.log(err))
 }
 
 async function receiveMessages(sbClient: ServiceBusClient, sessionId: string): Promise<void> {
@@ -36,7 +38,8 @@ async function receiveMessages(sbClient: ServiceBusClient, sessionId: string): P
     receiver.registerMessageHandler(onMessage, onError)
     await delay(5000)
 
-    await queueClient.close()
+    // Dont wait for the queueClient to close as we always create a new one
+    queueClient.close().catch(err => console.log(err))
 }
 
 main().catch(err => {

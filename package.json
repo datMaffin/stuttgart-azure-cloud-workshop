@@ -2,12 +2,12 @@
   "name": "stuggy",
   "version": "1.0.0",
   "description": "Boilerplate project for the workshop in Stuttgart",
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
   "scripts": {
-    "prebuild": "npm run lint",
+    "prebuild": "npm run lint --scripts-prepend-node-path=auto",
     "lint": "tslint -c tslint.json -p tsconfig.json --fix",
-    "build": "tsc",
-    "prestart": "npm run build",
+    "build": "rm -rf dist && tsc --pretty",
+    "prestart": "npm run build --scripts-prepend-node-path=auto",
     "start": "node .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
