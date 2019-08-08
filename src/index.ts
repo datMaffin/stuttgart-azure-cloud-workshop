@@ -7,7 +7,6 @@ app.get('/', (req, res) => {
     res.send('Hello world!')
 })
 
-
 // start the Express server
 app.listen(port, () => {
     // tslint:disable-next-line:no-console
