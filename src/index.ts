@@ -24,6 +24,7 @@ app.post('/', async (request: Request, response: Response) => {
     if (request.body.bike === undefined) {
         response.status(400).send('Not a bike')
     } else {
+        // TODO: Somewhere here is an error...
         const bike: string = request.body.bike
         sender
             .send({
