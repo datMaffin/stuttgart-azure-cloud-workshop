@@ -1,46 +1,28 @@
-import { OnError, Sender, ServiceBusClient, ServiceBusMessage } from '@azure/service-bus'
-import * as bodyparser from 'body-parser'
-import express, { NextFunction, Request, Response } from 'express'
+import { OnError, ReceiveMode, ServiceBusClient, ServiceBusMessage } from '@azure/service-bus'
 
+import { delay } from 'rhea-promise'
 import { connectionString, queueName } from '../config.json'
-
-const port = 8080
-
-const loggerMiddleware = (request: Request, _response: Response, next: NextFunction) => {
-    console.log(`${request.method} ${request.path}`)
-    next()
-}
-
-const app = express()
-app.use(loggerMiddleware)
-app.use(bodyparser.json())
 
 const client = ServiceBusClient.createFromConnectionString(connectionString)
 const queueClient = client.createQueueClient(queueName)
-const sender = queueClient.createSender()
+const receiver = queueClient.createReceiver(ReceiveMode.peekLock)
 
-// define a route handler for the default home page
-app.post('/', async (request: Request, response: Response) => {
-    if (request.body.bike === undefined) {
-        response.status(400).send('Not a bike')
-    } else {
-        const bike: string = request.body.bike
-        await sender
-            .send({
-                body: bike,
-                label: 'Test'
-            })
-            .catch(err => {
-                response.status(500).send(err)
-            })
-
-        // Dont wait for the queueClient to close as we always create a new one
-        queueClient.close().catch(err => console.log(err))
-        response.sendStatus(200)
+async function receiveMessages(sbClient: ServiceBusClient, sessionId: string): Promise<void> {
+    const onMessage = async (brokeredMessage: ServiceBusMessage) => {
+        console.log(`Received: ${brokeredMessage.sessionId} - ${brokeredMessage.body} `)
     }
-})
 
-// start the Express server
-app.listen(port, () => {
-    console.log(`server started at http://localhost:${port}`)
+    const onError: OnError = (err): void => {
+        console.log('>>>>> Error occured: ', err)
+    }
+    receiver.registerMessageHandler(onMessage, onError)
+    await delay(5000)
+}
+
+async function main(): Promise<void> {
+    await receiveMessages(client, 'session-1')
+}
+
+main().catch(err => {
+    console.log('>>>>> Error occured: ', err)
 })
