@@ -1,5 +1,8 @@
+import { OnError, Sender, ServiceBusClient, ServiceBusMessage } from '@azure/service-bus'
 import * as bodyparser from 'body-parser'
 import express, { NextFunction, Request, Response } from 'express'
+
+import { connectionString, queueName } from '../config.json'
 
 const port = 8080
 
@@ -12,12 +15,28 @@ const app = express()
 app.use(loggerMiddleware)
 app.use(bodyparser.json())
 
+const client = ServiceBusClient.createFromConnectionString(connectionString)
+const queueClient = client.createQueueClient(queueName)
+const sender = queueClient.createSender()
+
 // define a route handler for the default home page
-app.post('/', (request: Request, response: Response) => {
+app.post('/', async (request: Request, response: Response) => {
     if (request.body.bike === undefined) {
         response.status(400).send('Not a bike')
     } else {
-        response.status(200).json(request.body.bike)
+        const bike: string = request.body.bike
+        await sender
+            .send({
+                body: bike,
+                label: 'Test'
+            })
+            .catch(err => {
+                response.status(500).send(err)
+            })
+
+        // Dont wait for the queueClient to close as we always create a new one
+        queueClient.close().catch(err => console.log(err))
+        response.sendStatus(200)
     }
 })
 

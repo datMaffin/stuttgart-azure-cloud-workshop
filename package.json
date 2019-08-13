@@ -2,7 +2,7 @@
   "name": "stuggy",
   "version": "1.0.0",
   "description": "Boilerplate project for the workshop in Stuttgart",
-  "main": "dist/index.js",
+  "main": "dist/src/index.js",
   "scripts": {
     "prebuild": "npm run lint --scripts-prepend-node-path=auto",
     "lint": "tslint -c tslint.json -p tsconfig.json --fix",
