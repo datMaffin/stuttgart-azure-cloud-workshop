@@ -25,10 +25,13 @@ app.post('/', async (request: Request, response: Response) => {
         response.status(400).send('Not a bike')
     } else {
         const bike: string = request.body.bike
-        await sender
+        sender
             .send({
                 body: bike,
                 label: 'Test'
+            })
+            .then(() => {
+                response.sendStatus(200)
             })
             .catch(err => {
                 response.status(500).send(err)
@@ -36,7 +39,6 @@ app.post('/', async (request: Request, response: Response) => {
 
         // Dont wait for the queueClient to close as we always create a new one
         queueClient.close().catch(err => console.log(err))
-        response.sendStatus(200)
     }
 })
 
